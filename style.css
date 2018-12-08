@@ -1,0 +1,9 @@
+form#iste{width:100%;padding:20px;font-weight: 600;}
+form#iste input{margin-right: 50px;text-align: center;}
+td.bar{text-align: center;}
+th{text-align: center;background: #666;color: #fff;}
+input#box{text-align: center;}
+span.colored{color: red;}
+span.colored2{color: blue;}
+span.colored3{color:green;}
+h4.hmodiCost{margin:20px 0 10px 0;border-bottom:1px solid #ccc;padding-bottom: 5px;}
