@@ -21,7 +21,7 @@ var table = {
 }
  
     function createTable(){
-        var tablo = $('<table>').addClass('foo');
+        var tablo = $('<table>').addClass('table table-bordered');
         document.getElementById('matrix').innerHTML="";
         var output = document.getElementById('matrix');
         var row = document.getElementById('row').value;
@@ -47,7 +47,7 @@ var table = {
                 if(!document.getElementById('timedrpact'+i)){
                     var sutun = document.createElement("th");
                     sutun.setAttribute("id","timedrpact"+i);
-                    sutun.setAttribute("class","arzNumber");
+                    sutun.setAttribute("class","thead-dark");
                     if(i==table.row-1){
                         sutun.innerHTML = "TALEP";
                     }else{
@@ -96,6 +96,7 @@ var table = {
                         giris.setAttribute("id","box");
                         giris.setAttribute("type","text");
                         giris.setAttribute("name","box");
+                        giris.setAttribute("size",4);
                         deger.append(giris);
                         satir.append(deger);
                     }
@@ -142,6 +143,8 @@ $(function(){
         var i=0, j=0;
         var talep,arz;
         
+        document.getElementById('result').innerHTML="";
+        
         //bulunan maliyetler
         var cV = new Array(table.row-2);
         for(i=0;i<table.row-2;i++)
@@ -160,6 +163,15 @@ $(function(){
             
         }
         
+        var tempMatrix = new Array(table.row-1);
+        for(i=0;i<table.row-1;i++)
+            tempMatrix[i] = new Array(table.column);
+        
+        for(i=0;i<table.row-1;i++){
+            for(j=0;j<table.column;j++){
+                tempMatrix[i][j] = matrix[i][j];
+            }  
+        }
         
         i=0;
         j=0;
@@ -202,36 +214,159 @@ $(function(){
         
         var lengthI = table.row-2;
         var lengthJ = table.column-1;
+        
+        
     
         
         var tum = new Array(table.row-2);
         for(i=0;i<table.row-2;i++)
             tum[i] = new Array(table.column-1);
         
+        
+        var tableH = $('<table>').addClass('table table-bordered tableH');
         for(i=0;i<table.row-2;i++){
+            if(i==0){
+                var rows = $('<tr>');
+                for(j=0;j<table.column;j++){
+                    var cells = $('<th>');
+                    if(j==0){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    else{
+                        var cellData = "T"+j;
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    if(j==table.column-1){
+                        var cellsend = $('<th>');
+                        var cellData = "ARZ";
+                        cellsend.append(cellData);
+                        rows.append(cellsend);
+                    }
+                }
+                
+                tableH.append(rows);
+                
+            }
+
+            var trH = $('<tr>').addClass('bar');
             for(j=0;j<table.column-1;j++){
-                tum[i][j]=matrix[i][j];
-                console.log(tum[i][j]);
+                if(j==0){
+                    var cells = $('<th>');
+                    var aNo = i + 1;
+                    var cellData = "A"+aNo;
+                    cells.append(cellData);
+                    trH.append(cells);
+                }
+                var tdH = document.createElement("td");
+                if(i==table.row-1 && j<=table.column-1 || j==table.column-1 && i<=table.row-1 ){}
+                else{
+                    tum[i][j]=matrix[i][j];
+                    if(cV[i][j] != -1){
+                        //console.log(tum[i][j] + " " + c[i][j]);
+                        var tagH = document.createElement("span");
+                        tagH.setAttribute("class", "colored");
+                        tagH.innerHTML = " (" + cV[i][j] + ")";
+                        var dataH = tum[i][j];
+                        tdH.append(dataH);
+                        tdH.append(tagH);
+                    }
+                    else{
+                        //console.log(tum[i][j]);
+                        var dataH = tum[i][j];
+                        tdH.append(dataH);
+                    }
+                }
+                trH.append(tdH);
+                if(j==table.column-2){
+                    var cells = $('<td>');
+                    
+                    var cellData = matrix[i][table.column-1];
+                    cells.append(cellData);
+                    trH.append(cells);
+                }
+                
+            }
+            tableH.append(trH);
+            if(i==table.row-3){
+                var rows = $('<tr>');
+                for(j=0;j<table.column;j++){
+                    
+                    if(j==0){
+                        var cells = $('<th>');
+                        var cellData = "TALEP";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    else{
+                        var cells = $('<td>');
+                        //matrix[table.row-2][j]; 
+                        var cellData = matrix[table.row-2][j-1];
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    /*if(j==table.column-1){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }*/
+                }
+                
+                tableH.append(rows);
+                
             }
             
+            
         }
+        $('#result').append(tableH);
         
+        var nwCost = $('<div>').addClass('nwCost');
+        var strNwCost;
+        nwCost.append("Kuzey-Batı yöntemine göre bulunan maliyet<br>");
+        for(i=0;i<table.row-2;i++){
+            for(j=0;j<table.column-1;j++){
+                if(c[i][j]!=-1 && i==0 && j==0){
+                    nwCost.append("Toplam maliyet = (" + c[i][j] + " x " + cV[i][j] + ")");
+                }
+                if(c[i][j]!=-1){
+                    nwCost.append(" + (" + c[i][j] + " x " + cV[i][j] + ")");
+                }
+            }
+        }
+        nwCost.append(" = " + toplamM + "<br>");
+        nwCost.append("Toplam maliyete göre MODI yöntemi ile optimum kontrolü gerçekleştirilir. ");
+        
+        $('#result').append(nwCost);
         
         
         //console.log(islemSayisi);
         //return matrix[table.row-2][0];
-        
-        modi(tum, c, cV, lengthI, lengthJ);
+        var iterationN = 1;
+        modi(tum, c, cV, lengthI, lengthJ, iterationN, tempMatrix);
         
         return toplamM;
     }
-
-    function modi(tum,c,cV,lengthI,lengthJ){
+    
+    
+    
+    function modi(tum,c,cV,lengthI,lengthJ,iterationN,tempMatrix){
         var i,j;
         var r1, r2, r3, r4, c1, c2, c3, c4;
         var work = false;
         var minLoop;
         var optimumM = 0;
+        
+        var modiCost = $('<div>').addClass('modiCost');
+        var modiCost2 = $('<div>').addClass('modiCost');
+        var modiCost3 = $('<div>').addClass('modiCost');
+        var modiCost4 = $('<div>').addClass('modiCost');
+        var modiCost5 = $('<div>').addClass('modiCost');
+        var modiCost6 = $('<div>').addClass('modiCost');
+        var hmodiCost = $('<h4>').addClass('hmodiCost');
+        hmodiCost.append(iterationN + ". iterasyon");
+        $("#result").append(hmodiCost);
         
         var yedekC = new Array(lengthI);
         for(i=0;i<lengthI;i++)
@@ -267,47 +402,459 @@ $(function(){
         
         var m = 0;
         var kucuk;
+        var br = $('<br>');
         
+        var uivjStep = 0;
+        var dijStep = 0;
         var min = 0;
         var minI, minJ;
+        var it, jt;
         
         u[0] = 0; //const
         
         // 1.aşama u ve v değerleri bulundu
-        for(i=0;i<lengthI;i++){
-            for(j=0;j<lengthJ;j++){
-                if(c[i][j] != -1){
-                    if(u[i]!=-1 && v[j]==-1){
-                        v[j] = c[i][j] - u[i];
-                        console.log("v[" + j +"] = " + v[j]);
-                    }
-                    else if(u[i]==-1 && v[j]!=-1){
-                        u[i] = c[i][j] - v[j];
-                        console.log("u[" + i +"] = " + u[i]);
+        modiCost.append("<b>1. adım:</b> u<sub>i</sub> ve v<sub>j</sub> değerleri hesaplanmış hücreler üzerinden hesaplanır. Hesaplama için kullanılan formül <b>c<sub>i</sub><sub>j</sub> = u<sub>i</sub> + v<sub>i</sub></b>");
+        modiCost.append("<br>u<sub>1</sub> = 0 alınır.<br>");
+        var mCvlen = lengthI + lengthJ - 1;
+        var y = 0;
+        //console.log("hesaplanması gereken -> " + toplamHesaplanmasi);
+        while(y<mCvlen){
+            for(i=0;i<lengthI;i++){
+                for(j=0;j<lengthJ;j++){
+                    if(c[i][j] != -1){
+                        if(u[i]!=-1 && v[j]==-1){
+                            v[j] = c[i][j] - u[i];
+                            y++;
+                            uivjStep++;
+                            it = i+1;
+                            jt = j+1;
+                            modiCost.append("<br>" + uivjStep + ". c<sub>" + it + jt + "</sub> = u<sub>" + it + "</sub> + v<sub>"+ jt + "</sub> => v<sub>" + jt + "</sub> = c<sub>" + it + jt + "</sub> - u<sub>" + it + "</sub> => v<sub>" + jt + "</sub> = " + c[i][j] + " - " + u[i] + " => v<sub>" + jt + "</sub> = " + v[j] + "<br>");
+                            console.log("v[" + j +"] = " + v[j]);
+                        }
+                        else if(u[i]==-1 && v[j]!=-1){
+                            u[i] = c[i][j] - v[j];
+                            y++
+                            uivjStep++;
+                            it = i+1;
+                            jt = j+1;
+                            modiCost.append("<br>" + uivjStep + ". c<sub>" + it + jt + "</sub> = u<sub>" + it + "</sub> + v<sub>"+ jt + "</sub> => u<sub>" + it + "</sub> = c<sub>" + it + jt + "</sub> - v<sub>" + jt + "</sub> => u<sub>" + it + "</sub> = " + c[i][j] + " - " + v[j] + " => u<sub>" + it + "</sub> = " + u[i] + "<br>");
+                            console.log("u[" + i +"] = " + u[i]);
+                        }
                     }
                 }
             }
         }
         
-        // 2.aşama hesaplanmamış bölgelerin d[i][j] değerleri bulunur.
+        //ui vj tablo görünümü
+        $("#result").append(modiCost);
+        $("#result").append('<br>');
         
+        for(i=0;i<table.row-1;i++){
+            for(j=0;j<table.column;j++){
+                console.log("tempMatrix[" + i + "][" + j + "] = " + tempMatrix[i][j]);
+            }
+        }
+        
+        var tableH = $('<table>').addClass('table table-bordered tableH');
+        for(i=0;i<table.row-2;i++){
+            if(i==0){
+                var rows = $('<tr>');
+                for(j=0;j<table.column+1;j++){
+                    var cells = $('<th>');
+                    if(j==0){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    else if(j<table.column){
+                        var cellData = "T"+j;
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    if(j==table.column-1){
+                        var cellsend = $('<th>');
+                        var cellData = "ARZ";
+                        cellsend.append(cellData);
+                        rows.append(cellsend);
+                    }
+                    if(j==table.column){
+                        var cellsend2 = $('<th>');
+                        var cellData = "u<sub>i</sub>";
+                        cellsend2.append(cellData);
+                        rows.append(cellsend2);
+                    }
+                }
+                
+                tableH.append(rows);
+                
+            }
+
+            var trH = $('<tr>').addClass('bar');
+            for(j=0;j<table.column;j++){
+                var tdH = document.createElement("td");
+                if(j==0){
+                    var cells = $('<th>');
+                    var aNo = i + 1;
+                    var cellData = "A"+aNo;
+                    cells.append(cellData);
+                    trH.append(cells);
+                }
+                
+                if(i==table.row-1 && j<=table.column-1 || j==table.column-1 && i<=table.row-1 ){
+                    var cells = $('<td>');
+                    
+                    var it = i + 1;
+                    cells.append("u<sub>" + it + "</sub> = " + u[i]);
+                    trH.append(cells);
+                    continue;
+                }
+                else if(j < table.column-1){
+                    tum[i][j]=tempMatrix[i][j];
+                    if(cV[i][j] != -1){
+                        //console.log(tum[i][j] + " " + c[i][j]);
+                        var tagH = document.createElement("span");
+                        tagH.setAttribute("class", "colored");
+                        tagH.innerHTML = " (" + cV[i][j] + ")";
+                        var dataH = tum[i][j];
+                        tdH.append(dataH);
+                        tdH.append(tagH);
+                    }
+                    else{
+                        //console.log(tum[i][j]);
+                        var dataH = tum[i][j];
+                        tdH.append(dataH);
+                    }
+                }
+                trH.append(tdH);
+                if(j==table.column-2){
+                    var cells = $('<td>');
+                    
+                    var cellData = tempMatrix[i][table.column-1];
+                    cells.append(cellData);
+                    trH.append(cells);
+                }
+                
+            }
+            tableH.append(trH);
+            if(i==table.row-3){
+                var rows = $('<tr>');
+                for(j=0;j<table.column;j++){
+                    
+                    if(j==0){
+                        var cells = $('<th>');
+                        var cellData = "TALEP";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    else{
+                        var cells = $('<td>');
+                        //matrix[table.row-2][j]; 
+                        var cellData = tempMatrix[i+1][j-1];
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    /*if(j==table.column-1){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }*/
+                }
+                tableH.append(rows);
+                var rows = $('<tr>');
+                for(j=0;j<table.column;j++){
+                    
+                    if(j==0){
+                        var cells = $('<th>');
+                        var cellData = "v<sub>j</sub>";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    else{
+                        var cells = $('<td>');
+                        //matrix[table.row-2][j];
+                        var jt = j;
+                        cells.append("v<sub>" + jt + "</sub> = " + v[j-1]);
+                        rows.append(cells);
+                    }
+                    /*if(j==table.column-1){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }*/
+                }
+                tableH.append(rows);
+            }
+            
+            
+        }
+        $('#result').append(tableH);
+
+        
+        
+        // 2.aşama hesaplanmamış bölgelerin d[i][j] değerleri bulunur.
+        modiCost2.append("<b>2. adım:</b> Hesaplanmayan hücrelerin d<sub>ij</sub> değerleri bulunur. Kullanılan formül d<sub>ij</sub> = c<sub>ij</sub> - (u<sub>i</sub> + v<sub>j</sub>)");
         for(i=0;i<lengthI;i++){
             for(j=0;j<lengthJ;j++){
                 if(c[i][j] == -1){
                     d[i][j] = tum[i][j] - (u[i]+v[j]);
+                    dijStep++;
+                    it = i + 1;
+                    jt = j + 1;
                     if(min > d[i][j]){
                         min = d[i][j];
                         minI = i;
                         minJ = j;
                     }
+                    modiCost2.append("<br>" + dijStep + ". d<sub>" + it + jt + "</sub> = c<sub>" + it + jt + "</sub> - (u<sub>"+ it + "</sub> + v<sub>" + jt + "</sub>) = " + tum[i][j] + " - (" + u[i] + " + " + v[j] + ") = " + d[i][j] + "<br>");
                     console.log("d["+i+"]["+j+"]="+d[i][j]);
                 }
             }
         }
-        
+        $("#result").append(modiCost2);
+        $("#result").append('<br>');
         // 3.aşama negatif olarak en düşük dij değerine göre optimumluk sorgulanır
         
+        var tableH = $('<table>').addClass('table table-bordered tableH');
+        for(i=0;i<table.row-2;i++){
+            if(i==0){
+                var rows = $('<tr>');
+                for(j=0;j<table.column+1;j++){
+                    var cells = $('<th>');
+                    if(j==0){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    else if(j<table.column){
+                        var cellData = "T"+j;
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    if(j==table.column-1){
+                        var cellsend = $('<th>');
+                        var cellData = "ARZ";
+                        cellsend.append(cellData);
+                        rows.append(cellsend);
+                    }
+                    if(j==table.column){
+                        var cellsend2 = $('<th>');
+                        var cellData = "u<sub>i</sub>";
+                        cellsend2.append(cellData);
+                        rows.append(cellsend2);
+                    }
+                }
+                
+                tableH.append(rows);
+                
+            }
+
+            var trH = $('<tr>').addClass('bar');
+            for(j=0;j<table.column;j++){
+                var tdH = document.createElement("td");
+                if(j==0){
+                    var cells = $('<th>');
+                    var aNo = i + 1;
+                    var cellData = "A"+aNo;
+                    cells.append(cellData);
+                    trH.append(cells);
+                }
+                
+                if(i==table.row-1 && j<=table.column-1 || j==table.column-1 && i<=table.row-1 ){
+                    var cells = $('<td>');
+                    
+                    var it = i + 1;
+                    cells.append("u<sub>" + it + "</sub> = " + u[i]);
+                    trH.append(cells);
+                    continue;
+                }
+                else if(j < table.column-1){
+                    tum[i][j]=tempMatrix[i][j];
+                    if(cV[i][j] != -1){
+                        //console.log(tum[i][j] + " " + c[i][j]);
+                        var tagH = document.createElement("span");
+                        tagH.setAttribute("class", "colored");
+                        tagH.innerHTML = " (" + cV[i][j] + ")";
+                        var dataH = tum[i][j];
+                        tdH.append(dataH);
+                        tdH.append(tagH);
+                    }
+                    else{
+                        //console.log(tum[i][j]);
+                        var tagH = document.createElement("span");
+                        tagH.setAttribute("class", "colored2");
+                        tagH.innerHTML = " (" + d[i][j] + ")";
+                        var dataH = tum[i][j];
+                        tdH.append(dataH);
+                        tdH.append(tagH);
+                    }
+                }
+                trH.append(tdH);
+                if(j==table.column-2){
+                    var cells = $('<td>');
+                    
+                    var cellData = tempMatrix[i][table.column-1];
+                    cells.append(cellData);
+                    trH.append(cells);
+                }
+                
+            }
+            tableH.append(trH);
+            if(i==table.row-3){
+                var rows = $('<tr>');
+                for(j=0;j<table.column;j++){
+                    
+                    if(j==0){
+                        var cells = $('<th>');
+                        var cellData = "TALEP";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    else{
+                        var cells = $('<td>');
+                        //matrix[table.row-2][j]; 
+                        var cellData = tempMatrix[i+1][j-1];
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    /*if(j==table.column-1){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }*/
+                }
+                tableH.append(rows);
+                var rows = $('<tr>');
+                for(j=0;j<table.column;j++){
+                    
+                    if(j==0){
+                        var cells = $('<th>');
+                        var cellData = "v<sub>j</sub>";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    else{
+                        var cells = $('<td>');
+                        //matrix[table.row-2][j];
+                        var jt = j;
+                        cells.append("v<sub>" + jt + "</sub> = " + v[j-1]);
+                        rows.append(cells);
+                    }
+                    /*if(j==table.column-1){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }*/
+                }
+                tableH.append(rows);
+            }
+            
+            
+        }
+        $('#result').append(tableH);
+
+        
         if(min>=0){
+            modiCost6.append("Hesaplanan d<sub>ij</sub> değerlerinin tümü 0'a eşit veya büyüktür. Optimum çözüm aşağıdaki tabloda verilmektedir.");
+            $('#result').append(modiCost6);
+            $("#result").append('<br>');
+            var tableH = $('<table>').addClass('table table-bordered tableH');
+            for(i=0;i<table.row-2;i++){
+            if(i==0){
+                var rows = $('<tr>');
+                for(j=0;j<table.column;j++){
+                    var cells = $('<th>');
+                    if(j==0){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    else{
+                        var cellData = "T"+j;
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    if(j==table.column-1){
+                        var cellsend = $('<th>');
+                        var cellData = "ARZ";
+                        cellsend.append(cellData);
+                        rows.append(cellsend);
+                    }
+                }
+                
+                tableH.append(rows);
+                
+            }
+
+            var trH = $('<tr>').addClass('bar');
+            for(j=0;j<table.column-1;j++){
+                if(j==0){
+                    var cells = $('<th>');
+                    var aNo = i + 1;
+                    var cellData = "A"+aNo;
+                    cells.append(cellData);
+                    trH.append(cells);
+                }
+                var tdH = document.createElement("td");
+                if(i==table.row-1 && j<=table.column-1 || j==table.column-1 && i<=table.row-1 ){}
+                else{
+                    tum[i][j]=tempMatrix[i][j];
+                    if(cV[i][j] != -1){
+                        //console.log(tum[i][j] + " " + c[i][j]);
+                        var tagH = document.createElement("span");
+                        tagH.setAttribute("class", "colored");
+                        tagH.innerHTML = " (" + cV[i][j] + ")";
+                        var dataH = tum[i][j];
+                        tdH.append(dataH);
+                        tdH.append(tagH);
+                    }
+                    else{
+                        //console.log(tum[i][j]);
+                        var dataH = tum[i][j];
+                        tdH.append(dataH);
+                    }
+                }
+                trH.append(tdH);
+                if(j==table.column-2){
+                    var cells = $('<td>');
+                    
+                    var cellData = tempMatrix[i][table.column-1];
+                    cells.append(cellData);
+                    trH.append(cells);
+                }
+                
+            }
+            tableH.append(trH);
+            if(i==table.row-3){
+                var rows = $('<tr>');
+                for(j=0;j<table.column;j++){
+                    
+                    if(j==0){
+                        var cells = $('<th>');
+                        var cellData = "TALEP";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    else{
+                        var cells = $('<td>');
+                        //matrix[table.row-2][j]; 
+                        var cellData = tempMatrix[table.row-2][j-1];
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    /*if(j==table.column-1){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }*/
+                }
+                
+                tableH.append(rows);
+                
+            }
+            
+            
+        }
+            $('#result').append(tableH);
             console.log("optimumdur.");
             for(i=0;i<lengthI;i++){
                 for(j=0;j<lengthJ;j++){
@@ -316,10 +863,31 @@ $(function(){
                     }
                 }
             }
+            var modiEndCost = $('<div>').addClass('modiEndCost');
+            
+            modiEndCost.append("MODI yöntemine göre bulunan maliyet<br>");
+            for(i=0;i<table.row-2;i++){
+                for(j=0;j<table.column-1;j++){
+                    if(c[i][j]!=-1 && i==0 && j==0){
+                        modiEndCost.append("Toplam minimum maliyet = (" + c[i][j] + " x " + cV[i][j] + ")");
+                    }
+                    if(c[i][j]!=-1){
+                        modiEndCost.append(" + (" + c[i][j] + " x " + cV[i][j] + ")");
+                    }
+                }
+            }
+            modiEndCost.append(" = " + optimumM + "<br>");
             console.log("optimum sonuç -> " + optimumM);
+            $('#result').append(modiEndCost);
             
             
-        }else{
+        }
+        else{
+            var it = minI+1;
+            var jt = minJ+1;
+            modiCost3.append("<b>3.adım</b> En düşük negatif d<sub>ij</sub> değerine göre döngü oluşturulur. d<sub>" + it + jt + "</sub> = " + d[minI][minJ] + "<br> + ve - işaretleri konularak döngü oluşturulur.");
+            $('#result').append(modiCost3);
+            $("#result").append('<br>');
             var satir, sutun;
             var temp;
             satir = minI;
@@ -334,17 +902,17 @@ $(function(){
             
             console.log("satir uzunluğu - > "+lengthI);
             console.log("minI - > " + minI);
-            if (minI == 0 && minJ!=0 && minJ !=lengthJ-1) {//( sola ve aşağı gidebilir) , sağa gidemez, yukarı gidemez
-                console.log("sağ ve sola gidebilir");
-                var yon = "sol";
-                var i = minI;
-                var j = minJ;
-                r1 = i;
-                c1 = j;
-                temp = minJ;
+         
+            console.log("sola-yukari-asagi-saga gidebilir");
+            var yon = "sol";
+            var i = minI;
+            var j = minJ;
+            r1 = i;
+            c1 = j;
+            temp = minJ;
                 
-                while(m < 2){
-                    if(yon=="sol"){
+            while(m < 2){
+                if(yon=="sol"){
                         while(1){
                             j--;
                             if(j<0){
@@ -362,7 +930,7 @@ $(function(){
                             }
                         }
                     }
-                    if(yon=="asagi"){
+                if(yon=="asagi"){
                         while(1){
                             i++;
                             if(i>lengthI-1){
@@ -381,7 +949,7 @@ $(function(){
                             }
                         }
                     }
-                    if(yon=="sag"){
+                if(yon=="sag"){
                        while(1){
                            j++;
                            if(j>lengthJ-1){
@@ -402,446 +970,9 @@ $(function(){
                            }
                        } 
                     }
-                }
-                m=0;
-                if(!work){
-                    var yon = "asagi";
-                    var i = minI;
-                    var j = minJ;
-                    r1 = i;
-                    c1 = j;
-                    temp = minI;
-
-                    while(m < 2){
-                        if(yon=="asagi"){
-                            while(1){
-                                i++;
-                                if(i>lengthI-1){
-                                    m=3;
-                                    break;
-                                }
-                                else if(c[i][j] != -1){
-                                    loop[0][1] = cV[i][j];
-                                    r2 = i;
-                                    c2 = j;
-                                    minLoop = loop[0][1];
-                                    m++;
-                                    yon = "sag";
-                                    break;
-                                }
-                            }
-                        }
-                        if(yon=="sag"){
-                            while(1){
-                                j++;
-                                if(j>lengthJ-1){
-                                    yon = "asagi";
-                                    i = temp++;
-                                    j = sutun;
-                                    m = 0;
-                                    break;
-                                }else if(c[i][j] != -1){
-                                    loop[1][0] = cV[i][j];
-                                    r3 = i;
-                                    c3 = j;
-                                    m++;
-                                    yon = "yukari";
-                                    break;
-                                }
-                            }
-                        }
-                        if(yon=="yukari"){
-                           while(1){
-                               i--;
-                               if(i<0){
-                                   yon = "asagi";
-                                   i = temp++;
-                                   j = sutun;
-                                   m = 0;
-                                   break;
-                               }else if(c[i][j]!=-1&&i==satir){
-                                   loop[1][1] = cV[i][j];
-                                   r4 = i;
-                                   c4 = j;
-                                   if(minLoop > loop[1][1])
-                                       minLoop = loop[1][1];
-                                   m++;
-                                   break;
-                               }
-                           } 
-                        }
-                    }
-                }
-                for(i=0;i<2;i++){
-                    for(j=0;j<2;j++){
-                        console.log("loop[" + i + "][" + j + "]=" + loop[i][j]);
-                    }
-                }
-			}
-            else if(minI == 0 && minJ == lengthJ-1){// sadece sola gidebilir.
-                console.log("sadece sola gidebilir");
-                var yon = "sol";
-                var i = minI;
-                var j = minJ;
-                r1 = i;
-                c1 = j;
-                temp = minJ;
-                
-                while(m < 2){
-                    if(yon=="sol"){
-                        while(1){
-                            j--;
-                            if(j<0){
-                                m=3;
-                                break;
-                            }
-                            else if(c[i][j] != -1){
-                                loop[0][1] = cV[i][j];
-                                r2 = i;
-                                c2 = j;
-                                minLoop = loop[0][1];
-                                m++;
-                                yon = "asagi";
-                                break;
-                            }
-                        }
-                    }
-                    if(yon=="asagi"){
-                        while(1){
-                            i++;
-                            if(i>lengthI-1){
-                                yon = "sol";
-                                i = satir;
-                                j = temp--;
-                                m = 0;
-                                break;
-                            }else if(c[i][j] != -1){
-                                loop[1][0] = cV[i][j];
-                                r3 = i;
-                                c3 = j;
-                                m++;
-                                yon = "sag";
-                                break;
-                            }
-                        }
-                    }
-                    if(yon=="sag"){
-                       while(1){
-                           j++;
-                           if(j>lengthJ-1){
-                               yon = "sol";
-                               i = satir;
-                               j = temp--;
-                               m = 0;
-                               break;
-                           }else if(c[i][j]!=-1&&j==sutun){
-                               loop[1][1] = cV[i][j];
-                               r4 = i;
-                               c4 = j;
-                               if(minLoop > loop[1][1])
-                                   minLoop = loop[1][1];
-                               m++;
-                               break;
-                           }
-                       } 
-                    }
-                }
-                for(i=0;i<2;i++){
-                    for(j=0;j<2;j++){
-                        console.log("loop[" + i + "][" + j + "]=" + loop[i][j]);
-                    }
-                }
-                
             }
-            else if(minI == 0 && minJ==0){ // sadece aşağı gidebilir
-                console.log("sadece asagi gidebilir");
-                var yon = "asagi";
-                var i = minI;
-                var j = minJ;
-                r1 = i;
-                c1 = j;
-                temp = minI;
-                
-                while(m < 2){
-                    if(yon=="asagi"){
-                        while(1){
-                            i++;
-                            if(i>lengthI-1){
-                                m=3;
-                                break;
-                            }
-                            else if(c[i][j] != -1){
-                                loop[0][1] = cV[i][j];
-                                r2 = i;
-                                c2 = j;
-                                minLoop = loop[0][1];
-                                m++;
-                                yon = "sag";
-                                break;
-                            }
-                        }
-                    }
-                    if(yon=="sag"){
-                        while(1){
-                            j++;
-                            if(j>lengthJ-1){
-                                yon = "asagi";
-                                i = temp++;
-                                j = sutun;
-                                m = 0;
-                                break;
-                            }else if(c[i][j] != -1){
-                                loop[1][0] = cV[i][j];
-                                r3 = i;
-                                c3 = j;
-                                m++;
-                                yon = "yukari";
-                                break;
-                            }
-                        }
-                    }
-                    if(yon=="yukari"){
-                       while(1){
-                           i--;
-                           if(i<0){
-                               yon = "asagi";
-                               i = temp++;
-                               j = sutun;
-                               m = 0;
-                               break;
-                           }else if(c[i][j]!=-1&&i==satir){
-                               loop[1][1] = cV[i][j];
-                               r4 = i;
-                               c4 = j;
-                               if(minLoop > loop[1][1])
-                                   minLoop = loop[1][1];
-                               m++;
-                               break;
-                           }
-                       } 
-                    }
-                }
-                for(i=0;i<2;i++){
-                    for(j=0;j<2;j++){
-                        console.log("loop[" + i + "][" + j + "]=" + loop[i][j]);
-                    }
-                }
-            }
-            else if(minJ == 0 && minI!= 0 && minI!=lengthI-1){//yukarı gidemez, (aşağı - sağa gidebilir), sola gidemez
-                console.log("asagi ve saga gidebilir");
-                var yon = "asagi";
-                var i = minI;
-                var j = minJ;
-                r1 = i;
-                c1 = j;
-                temp = minI;
-                
-                while(m < 2){
-                    if(yon=="asagi"){
-                        while(1){
-                            i++;
-                            if(i>lengthI-1){
-                                m=3;
-                                break;
-                            }
-                            else if(c[i][j] != -1){
-                                loop[0][1] = cV[i][j];
-                                r2 = i;
-                                c2 = j;
-                                minLoop = loop[0][1];
-                                m++;
-                                yon = "sag";
-                                break;
-                            }
-                        }
-                    }
-                    if(yon=="sag"){
-                        while(1){
-                            j++;
-                            if(j>lengthJ-1){
-                                yon = "asagi";
-                                i = temp++;
-                                j = sutun;
-                                m = 0;
-                                break;
-                            }else if(c[i][j] != -1){
-                                loop[1][0] = cV[i][j];
-                                r3 = i;
-                                c3 = j;
-                                m++;
-                                yon = "yukari";
-                                break;
-                            }
-                        }
-                    }
-                    if(yon=="yukari"){
-                       while(1){
-                           i--;
-                           if(i<0){
-                               yon = "asagi";
-                               i = temp++;
-                               j = sutun;
-                               m = 0;
-                               break;
-                           }else if(c[i][j]!=-1&&i==satir){
-                               loop[1][1] = cV[i][j];
-                               r4 = i;
-                               c4 = j;
-                               if(minLoop > loop[1][1])
-                                   minLoop = loop[1][1];
-                               m++;
-                               work=true;
-                               break;
-                           }
-                       } 
-                    }
-                }
-                m=0;
-                if(!work){
-                    var yon = "sag";
-                    var i = minI;
-                    var j = minJ;
-                    r1 = i;
-                    c1 = j;
-                    temp = minJ;
-
-                    while(m < 2){
-                        if(yon=="sag"){
-                            while(1){
-                                j++;
-                                if(j>lengthJ-1){
-                                    m=3;
-                                    break;
-                                }
-                                else if(c[i][j] != -1){
-                                    loop[0][1] = cV[i][j];
-                                    r2 = i;
-                                    c2 = j;
-                                    minLoop = loop[0][1];
-                                    m++;
-                                    yon = "yukari";
-                                    break;
-                                }
-                            }
-                        }
-                        if(yon=="yukari"){
-                            while(1){
-                                i--;
-                                if(i<0){
-                                    yon = "sag";
-                                    i = satir;
-                                    j = temp++;
-                                    m = 0;
-                                    break;
-                                }else if(c[i][j] != -1){
-                                    loop[1][0] = cV[i][j];
-                                    r3 = i;
-                                    c3 = j;
-                                    m++;
-                                    yon = "sol";
-                                    break;
-                                }
-                            }
-                        }
-                        if(yon=="sol"){
-                           while(1){
-                               j--;
-                               if(j<0){
-                                   yon = "sag";
-                                   i = satir;
-                                   j = temp++;
-                                   m = 0;
-                                   break;
-                               }else if(c[i][j]!=-1&&j==sutun){
-                                   loop[1][1] = cV[i][j];
-                                   r4 = i;
-                                   c4 = j;
-                                   if(minLoop > loop[1][1])
-                                       minLoop = loop[1][1];
-                                   m++;
-                                   break;
-                               }
-                           } 
-                        }
-                    }
-                }
-                for(i=0;i<2;i++){
-                    for(j=0;j<2;j++){
-                        console.log("loop[" + i + "][" + j + "]=" + loop[i][j]);
-                    }
-                }
-            }
-            else if(minI!=0 && minI!=lengthI-1 && minJ != 0 && minJ != lengthJ-1){//(sola-yukarı-aşağı-sağa gidebilir)
-                console.log("sola-yukari-asagi-saga gidebilir");
-                var yon = "sol";
-                var i = minI;
-                var j = minJ;
-                r1 = i;
-                c1 = j;
-                temp = minJ;
-                
-                while(m < 2){
-                    if(yon=="sol"){
-                        while(1){
-                            j--;
-                            if(j<0){
-                                m=3;
-                                break;
-                            }
-                            else if(c[i][j] != -1){
-                                loop[0][1] = cV[i][j];
-                                r2 = i;
-                                c2 = j;
-                                minLoop = loop[0][1];
-                                m++;
-                                yon = "asagi";
-                                break;
-                            }
-                        }
-                    }
-                    if(yon=="asagi"){
-                        while(1){
-                            i++;
-                            if(i>lengthI-1){
-                                yon = "sol";
-                                i = satir;
-                                j = temp--;
-                                m = 0;
-                                break;
-                            }else if(c[i][j] != -1){
-                                loop[1][0] = cV[i][j];
-                                r3 = i;
-                                c3 = j;
-                                m++;
-                                yon = "sag";
-                                break;
-                            }
-                        }
-                    }
-                    if(yon=="sag"){
-                       while(1){
-                           j++;
-                           if(j>lengthJ-1){
-                               yon = "sol";
-                               i = satir;
-                               j = temp--;
-                               m = 0;
-                               break;
-                           }else if(c[i][j]!=-1&&j==sutun){
-                               loop[1][1] = cV[i][j];
-                               r4 = i;
-                               c4 = j;
-                               if(minLoop > loop[1][1])
-                                   minLoop = loop[1][1];
-                               m++;
-                               work=true;
-                               break;
-                           }
-                       } 
-                    }
-                }
-                m=0;
-                if(!work){
+            m=0;
+            if(!work){
                     var yon = "yukari";
                     var i = minI;
                     var j = minJ;
@@ -910,8 +1041,8 @@ $(function(){
                         }
                     }
                 }
-                m=0;
-                if(!work){
+            m=0;
+            if(!work){
                     var yon = "asagi";
                     var i = minI;
                     var j = minJ;
@@ -980,8 +1111,8 @@ $(function(){
                         }
                     }
                 }
-                m=0;
-                if(!work){
+            m=0;
+            if(!work){
                     var yon = "sag";
                     var i = minI;
                     var j = minJ;
@@ -1050,453 +1181,191 @@ $(function(){
                     }
                 }
                 
-                for(i=0;i<2;i++){
-                    for(j=0;j<2;j++){
-                        console.log("loop[" + i + "][" + j + "]=" + loop[i][j]);
+            for(i=0;i<2;i++){
+                for(j=0;j<2;j++){
+                    console.log("loop[" + i + "][" + j + "]=" + loop[i][j]);
+                }
+            }
+                
+            
+ 
+            
+            var tableH = $('<table>').addClass('table table-bordered tableH');
+            for(i=0;i<table.row-2;i++){
+            if(i==0){
+                var rows = $('<tr>');
+                for(j=0;j<table.column+1;j++){
+                    var cells = $('<th>');
+                    if(j==0){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    else if(j<table.column){
+                        var cellData = "T"+j;
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    if(j==table.column-1){
+                        var cellsend = $('<th>');
+                        var cellData = "ARZ";
+                        cellsend.append(cellData);
+                        rows.append(cellsend);
+                    }
+                    if(j==table.column){
+                        var cellsend2 = $('<th>');
+                        var cellData = "u<sub>i</sub>";
+                        cellsend2.append(cellData);
+                        rows.append(cellsend2);
                     }
                 }
+                
+                tableH.append(rows);
                 
             }
-            else if(minI!=0 && minI!=lengthI-1 && minJ==lengthJ-1){//(yukarı-sola gidebilir)
-                console.log("sadece yukari gidebilir");
-                var yon = "yukari";
-                var i = minI;
-                var j = minJ;
-                r1 = i;
-                c1 = j;
-                temp = minI;
-                
-                while(m < 2){
-                    if(yon=="yukari"){
-                        while(1){
-                            i--;
-                            if(i<0){
-                                m=3;
-                                break;
-                            }
-                            else if(c[i][j] != -1){
-                                loop[0][1] = cV[i][j];
-                                r2 = i;
-                                c2 = j;
-                                minLoop = loop[0][1];
-                                m++;
-                                yon = "sol";
-                                break;
-                            }
-                        }
-                    }
-                    if(yon=="sol"){
-                        while(1){
-                            j--;
-                            if(j<0){
-                                yon = "yukari";
-                                i = temp--;
-                                j = sutun;
-                                m = 0;
-                                break;
-                            }else if(c[i][j] != -1){
-                                loop[1][0] = cV[i][j];
-                                r3 = i;
-                                c3 = j;
-                                m++;
-                                yon = "asagi";
-                                break;
-                            }
-                        }
-                    }
-                    if(yon=="asagi"){
-                       while(1){
-                           i++;
-                           if(i>lengthI-1){
-                               yon = "yukari";
-                               i = temp--;
-                               j = sutun;
-                               m = 0;
-                               break;
-                           }else if(c[i][j]!=-1&&i==satir){
-                               loop[1][1] = cV[i][j];
-                               r4 = i;
-                               c4 = j;
-                               if(minLoop > loop[1][1])
-                                   minLoop = loop[1][1];
-                               m++;
-                               work=true;
-                               break;
-                           }
-                       } 
-                    }
-                }
-                m=0;
-                if(!work){
-                    var yon = "sol";
-                    var i = minI;
-                    var j = minJ;
-                    r1 = i;
-                    c1 = j;
-                    temp = minJ;
 
-                    while(m < 2){
-                        if(yon=="sol"){
-                            while(1){
-                                j--;
-                                if(j<0){
-                                    m=3;
-                                    break;
-                                }
-                                else if(c[i][j] != -1){
-                                    loop[0][1] = cV[i][j];
-                                    r2 = i;
-                                    c2 = j;
-                                    minLoop = loop[0][1];
-                                    m++;
-                                    yon = "asagi";
-                                    break;
-                                }
-                            }
-                        }
-                        if(yon=="asagi"){
-                            while(1){
-                                i++;
-                                if(i>lengthI-1){
-                                    yon = "sol";
-                                    i = satir;
-                                    j = temp--;
-                                    m = 0;
-                                    break;
-                                }else if(c[i][j] != -1){
-                                    loop[1][0] = cV[i][j];
-                                    r3 = i;
-                                    c3 = j;
-                                    m++;
-                                    yon = "sag";
-                                    break;
-                                }
-                            }
-                        }
-                        if(yon=="sag"){
-                           while(1){
-                               j++;
-                               if(j>lengthJ-1){
-                                   yon = "sol";
-                                   i = satir;
-                                   j = temp--;
-                                   m = 0;
-                                   break;
-                               }else if(c[i][j]!=-1&&j==sutun){
-                                   loop[1][1] = cV[i][j];
-                                   r4 = i;
-                                   c4 = j;
-                                   if(minLoop > loop[1][1])
-                                       minLoop = loop[1][1];
-                                   m++;
-                                   break;
-                               }
-                           } 
-                        }
-                    }
+            var trH = $('<tr>').addClass('bar');
+            for(j=0;j<table.column;j++){
+                var tdH = document.createElement("td");
+                if(j==0){
+                    var cells = $('<th>');
+                    var aNo = i + 1;
+                    var cellData = "A"+aNo;
+                    cells.append(cellData);
+                    trH.append(cells);
                 }
-                for(i=0;i<2;i++){
-                    for(j=0;j<2;j++){
-                        console.log("loop[" + i + "][" + j + "]=" + loop[i][j]);
-                    }
-                }
-            }
-            else if(minI == lengthI-1 && minJ == 0){// (sağa gidebilir)
-                console.log("sadece sağa gidebilir");
-                var yon = "sag";
-                var i = minI;
-                var j = minJ;
-                r1 = i;
-                c1 = j;
-                temp = minJ;
                 
-                while(m < 2){
-                    if(yon=="sag"){
-                        while(1){
-                            j++;
-                            if(j>lengthJ-1){
-                                m=3;
-                                break;
-                            }
-                            else if(c[i][j] != -1){
-                                loop[0][1] = cV[i][j];
-                                r2 = i;
-                                c2 = j;
-                                minLoop = loop[0][1];
-                                m++;
-                                yon = "yukari";
-                                break;
-                            }
+                if(i==table.row-1 && j<=table.column-1 || j==table.column-1 && i<=table.row-1 ){
+                    var cells = $('<td>');
+                    
+                    var it = i + 1;
+                    cells.append("u<sub>" + it + "</sub> = " + u[i]);
+                    trH.append(cells);
+                    continue;
+                }
+                else if(j < table.column-1){
+                    tum[i][j]=tempMatrix[i][j];
+                    if(cV[i][j] != -1){
+                        //console.log(tum[i][j] + " " + c[i][j]);
+                        if(r2==i && c2==j || r4==i && c4==j){
+                            var tagH = document.createElement("span");
+                            var tagSign = document.createElement("span");
+                            tagH.setAttribute("class", "colored");
+                            tagSign.setAttribute("class", "colored3");
+                            tagH.innerHTML = " (" + cV[i][j] + ")";
+                            tagSign.innerHTML = " - ";
+                            var dataH = tum[i][j];
+                            tdH.append(dataH);
+                            tdH.append(tagH);
+                            tdH.append(tagSign);
+                        }else if(r3==i && c3==j){
+                            var tagH = document.createElement("span");
+                            var tagSign = document.createElement("span");
+                            tagH.setAttribute("class", "colored");
+                            tagSign.setAttribute("class", "colored3");
+                            tagH.innerHTML = " (" + cV[i][j] + ")";
+                            tagSign.innerHTML = " + ";
+                            var dataH = tum[i][j];
+                            tdH.append(dataH);
+                            tdH.append(tagH);
+                            tdH.append(tagSign);
+                        }
+                        else{
+                            var tagH = document.createElement("span");
+                            tagH.setAttribute("class", "colored");
+                            tagH.innerHTML = " (" + cV[i][j] + ")";
+                            var dataH = tum[i][j];
+                            tdH.append(dataH);
+                            tdH.append(tagH);
                         }
                     }
-                    if(yon=="yukari"){
-                        while(1){
-                            i--;
-                            if(i<0){
-                                yon = "sag";
-                                i = satir;
-                                j = temp++;
-                                m = 0;
-                                break;
-                            }else if(c[i][j] != -1){
-                                loop[1][0] = cV[i][j];
-                                r3 = i;
-                                c3 = j;
-                                m++;
-                                yon = "sol";
-                                break;
-                            }
+                    else{
+                        //console.log(tum[i][j]);
+                        if(r1==i && c1==j){
+                            var tagH = document.createElement("span");
+                            var tagSign = document.createElement("span");
+                            tagH.setAttribute("class", "colored2");
+                            tagSign.setAttribute("class", "colored3");
+                            tagH.innerHTML = " (" + d[i][j] + ")";
+                            tagSign.innerHTML = " + ";
+                            var dataH = tum[i][j];
+                            tdH.append(dataH);
+                            tdH.append(tagH);
+                            tdH.append(tagSign);
+                        }else{
+                            var tagH = document.createElement("span");
+                            tagH.setAttribute("class", "colored2");
+                            tagH.innerHTML = " (" + d[i][j] + ")";
+                            var dataH = tum[i][j];
+                            tdH.append(dataH);
+                            tdH.append(tagH);
                         }
-                    }
-                    if(yon=="sol"){
-                       while(1){
-                           j--;
-                           if(j<0){
-                               yon = "sag";
-                               i = satir;
-                               j = temp++;
-                               m = 0;
-                               break;
-                           }else if(c[i][j]!=-1&&j==sutun){
-                               loop[1][1] = cV[i][j];
-                               r4 = i;
-                               c4 = j;
-                               if(minLoop > loop[1][1])
-                                   minLoop = loop[1][1];
-                               m++;
-                               break;
-                           }
-                       } 
                     }
                 }
-                for(i=0;i<2;i++){
-                    for(j=0;j<2;j++){
-                        console.log("loop[" + i + "][" + j + "]=" + loop[i][j]);
-                    }
-                }
-            }
-            else if(minI == lengthI-1 && minJ!=0 && minJ!=lengthJ-1){//(yukarı-sağa gidebilir)
-                console.log("saga ve yukarı gidebilir");
-                var yon = "sag";
-                var i = minI;
-                var j = minJ;
-                r1 = i;
-                c1 = j;
-                temp = minJ;
-                
-                while(m < 2){
-                    if(yon=="sag"){
-                        while(1){
-                            j++;
-                            if(j>lengthJ-1){
-                                m=3;
-                                break;
-                            }
-                            else if(c[i][j] != -1){
-                                loop[0][1] = cV[i][j];
-                                r2 = i;
-                                c2 = j;
-                                minLoop = loop[0][1];
-                                m++;
-                                yon = "yukari";
-                                break;
-                            }
-                        }
-                    }
-                    if(yon=="yukari"){
-                        while(1){
-                            i--;
-                            if(i<0){
-                                yon = "sag";
-                                i = satir;
-                                j = temp++;
-                                m = 0;
-                                break;
-                            }else if(c[i][j] != -1){
-                                loop[1][0] = cV[i][j];
-                                r3 = i;
-                                c3 = j;
-                                m++;
-                                yon = "sol";
-                                break;
-                            }
-                        }
-                    }
-                    if(yon=="sol"){
-                       while(1){
-                           j--;
-                           if(j<0){
-                               yon = "sag";
-                               i = satir;
-                               j = temp++;
-                               m = 0;
-                               break;
-                           }else if(c[i][j]!=-1&&j==sutun){
-                               loop[1][1] = cV[i][j];
-                               r4 = i;
-                               c4 = j;
-                               if(minLoop > loop[1][1])
-                                   minLoop = loop[1][1];
-                               m++;
-                               work=true;
-                               break;
-                           }
-                       } 
-                    }
-                }
-                m=0;
-                if(!work){
-                    console.log("sadece yukari gidebilir");
-                    var yon = "yukari";
-                    var i = minI;
-                    var j = minJ;
-                    r1 = i;
-                    c1 = j;
-                    temp = minI;
-
-                    while(m < 2){
-                        if(yon=="yukari"){
-                            while(1){
-                                i--;
-                                if(i<0){
-                                    m=3;
-                                    break;
-                                }
-                                else if(c[i][j] != -1){
-                                    loop[0][1] = cV[i][j];
-                                    r2 = i;
-                                    c2 = j;
-                                    minLoop = loop[0][1];
-                                    m++;
-                                    yon = "sol";
-                                    break;
-                                }
-                            }
-                        }
-                        if(yon=="sol"){
-                            while(1){
-                                j--;
-                                if(j<0){
-                                    yon = "yukari";
-                                    i = temp--;
-                                    j = sutun;
-                                    m = 0;
-                                    break;
-                                }else if(c[i][j] != -1){
-                                    loop[1][0] = cV[i][j];
-                                    r3 = i;
-                                    c3 = j;
-                                    m++;
-                                    yon = "asagi";
-                                    break;
-                                }
-                            }
-                        }
-                        if(yon=="asagi"){
-                           while(1){
-                               i++;
-                               if(i>lengthI-1){
-                                   yon = "yukari";
-                                   i = temp--;
-                                   j = sutun;
-                                   m = 0;
-                                   break;
-                               }else if(c[i][j]!=-1&&i==satir){
-                                   loop[1][1] = cV[i][j];
-                                   r4 = i;
-                                   c4 = j;
-                                   if(minLoop > loop[1][1])
-                                       minLoop = loop[1][1];
-                                   m++;
-                                   break;
-                               }
-                           } 
-                        }
-                    }
-                    for(i=0;i<2;i++){
-                        for(j=0;j<2;j++){
-                            console.log("loop[" + i + "][" + j + "]=" + loop[i][j]);
-                        }
-                    }
+                trH.append(tdH);
+                if(j==table.column-2){
+                    var cells = $('<td>');
+                    
+                    var cellData = tempMatrix[i][table.column-1];
+                    cells.append(cellData);
+                    trH.append(cells);
                 }
                 
             }
-            else if(minI==lengthI-1 && minJ==lengthJ-1){// yukarı gidebilir
-                console.log("sadece yukari gidebilir");
-                var yon = "yukari";
-                var i = minI;
-                var j = minJ;
-                r1 = i;
-                c1 = j;
-                temp = minI;
-                
-                while(m < 2){
-                    if(yon=="yukari"){
-                        while(1){
-                            i--;
-                            if(i<0){
-                                m=3;
-                                break;
-                            }
-                            else if(c[i][j] != -1){
-                                loop[0][1] = cV[i][j];
-                                r2 = i;
-                                c2 = j;
-                                minLoop = loop[0][1];
-                                m++;
-                                yon = "sol";
-                                break;
-                            }
-                        }
+            tableH.append(trH);
+            if(i==table.row-3){
+                var rows = $('<tr>');
+                for(j=0;j<table.column;j++){
+                    
+                    if(j==0){
+                        var cells = $('<th>');
+                        var cellData = "TALEP";
+                        cells.append(cellData);
+                        rows.append(cells);
                     }
-                    if(yon=="sol"){
-                        while(1){
-                            j--;
-                            if(j<0){
-                                yon = "yukari";
-                                i = temp--;
-                                j = sutun;
-                                m = 0;
-                                break;
-                            }else if(c[i][j] != -1){
-                                loop[1][0] = cV[i][j];
-                                r3 = i;
-                                c3 = j;
-                                m++;
-                                yon = "asagi";
-                                break;
-                            }
-                        }
+                    else{
+                        var cells = $('<td>');
+                        //matrix[table.row-2][j]; 
+                        var cellData = tempMatrix[i+1][j-1];
+                        cells.append(cellData);
+                        rows.append(cells);
                     }
-                    if(yon=="asagi"){
-                       while(1){
-                           i++;
-                           if(i>lengthI-1){
-                               yon = "yukari";
-                               i = temp--;
-                               j = sutun;
-                               m = 0;
-                               break;
-                           }else if(c[i][j]!=-1&&i==satir){
-                               loop[1][1] = cV[i][j];
-                               r4 = i;
-                               c4 = j;
-                               if(minLoop > loop[1][1])
-                                   minLoop = loop[1][1];
-                               m++;
-                               break;
-                           }
-                       } 
-                    }
+                    /*if(j==table.column-1){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }*/
                 }
-                for(i=0;i<2;i++){
-                    for(j=0;j<2;j++){
-                        console.log("loop[" + i + "][" + j + "]=" + loop[i][j]);
+                tableH.append(rows);
+                var rows = $('<tr>');
+                for(j=0;j<table.column;j++){
+                    
+                    if(j==0){
+                        var cells = $('<th>');
+                        var cellData = "v<sub>j</sub>";
+                        cells.append(cellData);
+                        rows.append(cells);
                     }
+                    else{
+                        var cells = $('<td>');
+                        //matrix[table.row-2][j];
+                        var jt = j;
+                        cells.append("v<sub>" + jt + "</sub> = " + v[j-1]);
+                        rows.append(cells);
+                    }
+                    /*if(j==table.column-1){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }*/
                 }
+                tableH.append(rows);
             }
             
             
+        }
+        $('#result').append(tableH);
+                
             loop[0][0] += minLoop;
             loop[0][1] -= minLoop;
 			loop[1][0] += minLoop;
@@ -1531,9 +1400,116 @@ $(function(){
 					console.log("c[" + i + "][" + j + "]=" + c[i][j]);
 				}
 			}
-            modi(tum,c,cV,lengthI,lengthJ);
+            
+            modiCost4.append("<b>4. adım</b> - işarete sahip hücre değerleri karşılaştırılır. En küçük hesaplanmış değere sahip - işaretli " + minLoop + " değeri diğer tüm + ve - işaretli hesaplanmış değerlerden çıkartılır. Tablo yeniden oluşturulur.");
+            $('#result').append(modiCost4);
+            $("#result").append('<br>');
+            
+            var tableH = $('<table>').addClass('table table-bordered tableH');
+            for(i=0;i<table.row-2;i++){
+            if(i==0){
+                var rows = $('<tr>');
+                for(j=0;j<table.column;j++){
+                    var cells = $('<th>');
+                    if(j==0){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    else{
+                        var cellData = "T"+j;
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    if(j==table.column-1){
+                        var cellsend = $('<th>');
+                        var cellData = "ARZ";
+                        cellsend.append(cellData);
+                        rows.append(cellsend);
+                    }
+                }
+                
+                tableH.append(rows);
+                
+            }
+
+            var trH = $('<tr>').addClass('bar');
+            for(j=0;j<table.column-1;j++){
+                if(j==0){
+                    var cells = $('<th>');
+                    var aNo = i + 1;
+                    var cellData = "A"+aNo;
+                    cells.append(cellData);
+                    trH.append(cells);
+                }
+                var tdH = document.createElement("td");
+                if(i==table.row-1 && j<=table.column-1 || j==table.column-1 && i<=table.row-1 ){}
+                else{
+                    tum[i][j]=tempMatrix[i][j];
+                    if(cV[i][j] != -1){
+                        //console.log(tum[i][j] + " " + c[i][j]);
+                        var tagH = document.createElement("span");
+                        tagH.setAttribute("class", "colored");
+                        tagH.innerHTML = " (" + cV[i][j] + ")";
+                        var dataH = tum[i][j];
+                        tdH.append(dataH);
+                        tdH.append(tagH);
+                    }
+                    else{
+                        //console.log(tum[i][j]);
+                        var dataH = tum[i][j];
+                        tdH.append(dataH);
+                    }
+                }
+                trH.append(tdH);
+                if(j==table.column-2){
+                    var cells = $('<td>');
+                    
+                    var cellData = tempMatrix[i][table.column-1];
+                    cells.append(cellData);
+                    trH.append(cells);
+                }
+                
+            }
+            tableH.append(trH);
+            if(i==table.row-3){
+                var rows = $('<tr>');
+                for(j=0;j<table.column;j++){
+                    
+                    if(j==0){
+                        var cells = $('<th>');
+                        var cellData = "TALEP";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    else{
+                        var cells = $('<td>');
+                        //matrix[table.row-2][j]; 
+                        var cellData = tempMatrix[table.row-2][j-1];
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }
+                    /*if(j==table.column-1){
+                        var cellData = "";
+                        cells.append(cellData);
+                        rows.append(cells);
+                    }*/
+                }
+                
+                tableH.append(rows);
+                
+            }
+            
+            
         }
-        
+            $('#result').append(tableH);
+            modiCost5.append("<b>5.adım: </b> Sonraki iterasyona geçilir, 1'den 4'e kadar olan tüm adımlar optimum sonuç bulunana kadar tekrar edilir.");
+            $('#result').append(modiCost5);
+            $("#result").append('<br>');
+            iterationN++;
+            modi(tum,c,cV,lengthI,lengthJ,iterationN,tempMatrix);
+        }
+        //$('#result').append(modiCost);
         
         
     }
