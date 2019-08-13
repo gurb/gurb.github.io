@@ -2,7 +2,11 @@
  * Visual Studio 2015 dark style
  * Author: Nicolas LLOBERA <nllobera@gmail.com>
  */
-
+pre {
+    display: block;
+    font-size: 10pt;
+    color: #212529;
+}
 .hljs {
   display: block;
   overflow-x: auto;
